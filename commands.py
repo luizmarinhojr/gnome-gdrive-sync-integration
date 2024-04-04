@@ -10,7 +10,7 @@ def createDirectory(path):
     except:
         print('Fail to create the directory: ', new_path)
     finally:
-        print('Directory created successfully on: ', new_path)
+        print('Success: directory created on: ', new_path)
 
 
 def createFile(path):
@@ -22,10 +22,10 @@ def createFile(path):
     except:
         print('Fail to copy the file ', path, ' to ', new_path)
     finally:
-        print('File copied successfully on ', new_path)
+        print('Success: file copied to ', new_path)
 
 
-def verificationUser():
+def verifyUser():
     ls = os.listdir()
     if 'usermail.txt' not in ls:
         while True:
@@ -35,9 +35,9 @@ def verificationUser():
                     usermail.close()
                     return fetchUser()
             except:
-                print('A error on file')
+                print('Error: File usermail.txt was not created')
             finally:
-                print('File .txt created sussesfully!')
+                print('Success: usermail.txt was created!')
     else:
         fetchUser()
 
@@ -51,6 +51,6 @@ def fetchUser():
             usermail.close()
             return str(drivePath)
     except:
-        print('An error to read the file usermail.txt')
+        print('Error: file usermail.txt was not available to read')
     finally:
-        print('File readed sussesfully!')
+        print('Success: usermail.txt read!')

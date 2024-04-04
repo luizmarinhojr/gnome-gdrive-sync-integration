@@ -31,7 +31,7 @@ class MyHandler(FileSystemEventHandler):
 
 
 if __name__ == "__main__":
-    comm.verificationUser()
+    comm.verifyUser()
     path = "/home/machine/Documents"  # Directory to monitor
     event_handler = MyHandler()
     observer = Observer()
