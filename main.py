@@ -1,7 +1,9 @@
 import time
+import os
 import commands as comm
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+
 
 class MyHandler(FileSystemEventHandler):
     def on_any_event(self, event):
@@ -29,6 +31,7 @@ class MyHandler(FileSystemEventHandler):
 
 
 if __name__ == "__main__":
+    comm.verificationUser()
     path = "/home/machine/Documents"  # Directory to monitor
     event_handler = MyHandler()
     observer = Observer()
