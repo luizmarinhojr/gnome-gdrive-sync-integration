@@ -1,8 +1,9 @@
 import flet as ft
 import time
+from data import Data
 
 
-class App:
+class App(Data):
     def __init__(self, page: ft.Page):
         self.page = page
         self.page.title = 'Gdrive Sync'
@@ -11,8 +12,7 @@ class App:
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.page.on_resize = self.resizePage
         self.value = ''
-        self.data = Data()
-        self.paths = [] if self.fetchData() == [] else self.fetchData()
+        self.paths = [] if len(super().fetchData()) < 0 else super().fetchData()
         self.main()
 
 
@@ -23,17 +23,6 @@ class App:
             on_change=self.fetchText
         )
 
-        # self.buttonConfirm = ft.ElevatedButton(
-        #     text='Confirm paths and active Sync',
-        #     expand=True,
-        #     height=40,
-        #     color=ft.colors.WHITE,
-        #     icon=ft.icons.CHECK,
-        #     bgcolor=ft.colors.BLUE,
-        #     disabled=True if len(self.paths) < 0 else False,
-        #     on_click=self.createData
-        # )
-        
         container_field = ft.Row(
             [self.field_path, ft.FloatingActionButton(
                         icon = ft.icons.ADD,
@@ -43,18 +32,6 @@ class App:
             ],
             spacing=15
         )
-
-        # self.container_view = ft.Column(
-        #     height=70,
-        #     scroll=ft.ScrollMode.AUTO,
-        #     visible=False,
-        #     width = self.page.window_width
-        # )
-
-        # self.container_confirm = ft.Row([self.buttonConfirm], height=70)
-
-        if len(self.value) > 0:
-            self.fetchPath()
 
         self.page.add(container_field, self.createContainerView(), self.createContainerConfirm())
 
@@ -73,28 +50,31 @@ class App:
             color=ft.colors.WHITE,
             icon=ft.icons.CHECK,
             bgcolor=ft.colors.BLUE,
-            disabled=True if len(self.paths) < 0 else False,
-            on_click=self.createData
+            disabled=True if len(self.paths) < 1 else False,
+            on_click=super().createData
         )
-        return ft.Row([self.buttonConfirm], height=70)
+        self.containerConfirm = ft.Row([self.buttonConfirm], height=70)
+        return self.containerConfirm
 
 
     def createContainerView(self):
         if len(self.paths) > 0:
-            return ft.Column(
+            self.container_view = ft.Column(
                 [ft.Text(value=item) for item in self.paths],
                 height=70,
                 scroll=ft.ScrollMode.AUTO,
-                visible=True,
+                visible=True if len(self.paths) > 0 else False,
                 width = self.page.window_width
             )
+            return self.container_view
         else:
-            return ft.Column(
+            self.container_view = ft.Column(
                 height=70,
                 scroll=ft.ScrollMode.AUTO,
                 visible=False,
                 width = self.page.window_width
             )
+            return self.container_view
 
 
     def fetchText(self, e):
@@ -110,55 +90,14 @@ class App:
     def fetchPath(self, e=''):
         if len(self.value) > 0:
             self.paths.append(self.value)
-            self.container_view.visible = True
+            print(list(self.paths))
             self.container_view.controls.append(ft.Text(value=self.value))
-            self.buttonConfirm.disabled = False
+            self.container_view.visible = True
             self.container_view.width = self.page.window_width
+            self.buttonConfirm.disabled = False
             self.cleanField()
         else:
             print('Type your path first')
-    
-
-    def createData(self, e):
-        try:
-            with open('data.txt', 'w') as data:
-                [data.write(item + '\n') for item in self.paths]
-        except OSError:
-            print('Failed to create the file')
-        finally:
-            print('data.txt created or modified sussesfully!\n')
-    
-
-    def fetchData(self):
-        file_data = []
-        try:
-            with open('data.txt', 'r') as data:
-                file_data.append(linha.strip for linha in data)
-            print('Data Found: ' ,list(file_data))
-        except OSError:
-            print('Failed to create the file')
-        finally:
-            print('data.txt created or modified sussesfully!\n')
-        return file_data
-
-
-class Data:
-    def __init__(self):
-        self.data = self.fetchData()
-
-
-
-    def fetchData(self):
-        file_data = []
-        try:
-            with open('data.txt', 'r') as data:
-                file_data.append(linha.strip for linha in data)
-            print('Data Found: ' ,list(file_data))
-        except OSError:
-            print('Failed to create the file')
-        finally:
-            print('data.txt created or modified sussesfully!\n')
-        return file_data
 
 
 if __name__ == '__main__':

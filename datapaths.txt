@@ -1,0 +1,2 @@
+/home/machine/Documents
+/home/machine/Pictures
