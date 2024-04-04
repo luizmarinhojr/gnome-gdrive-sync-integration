@@ -4,6 +4,6 @@
     <img src="https://raw.githubusercontent.com/pedromxavier/flag-badges/main/badges/BR.svg" alt="made in <country code>">
 </a>
 
-# Syncronization to Google Drive and Fedora Gnome.
+# Synchronization to Google Drive and Fedora Gnome.
 
 ## 🛠️ Under construction
