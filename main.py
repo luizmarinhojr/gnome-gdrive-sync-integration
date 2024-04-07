@@ -1,8 +1,8 @@
-import time
-import os
+import time, threading
 import commands as comm
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from watchdog.events import FileSystemEvent
 
 
 class MyHandler(FileSystemEventHandler):
@@ -10,7 +10,7 @@ class MyHandler(FileSystemEventHandler):
         if event.is_directory:
             if event.event_type == 'created':
                 print(f'Directory created: {event.src_path}')
-                comm.createDirectory(event.src_path)
+                commands.createDirectory(event.src_path)
 
             elif event.event_type == 'modified':
                 print(f'Directory modified: {event.src_path}')
@@ -21,17 +21,18 @@ class MyHandler(FileSystemEventHandler):
         else:
             if event.event_type == 'created':
                 print(f'File created: {event.src_path}')
-                comm.createFile(event.src_path)
+                commands.createFile(event.src_path)
 
             elif event.event_type == 'modified':
                 print(f'File modified: {event.src_path}')
+                commands.modifiedFile(event.src_path)
 
             elif event.event_type == 'deleted':
                 print(f'File deleted: {event.src_path}')
 
 
 if __name__ == "__main__":
-    comm.verifyUser()
+    commands = comm.Commands()
     path = "/home/machine/Documents"  # Directory to monitor
     event_handler = MyHandler()
     observer = Observer()
