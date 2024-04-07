@@ -12,60 +12,51 @@ class Commands:
         root = self.drivePath.removesuffix('/Meu Drive')
         try:
             os.chdir(root)
-        except:
-            print("Fail: it didn't connect")
-        finally:
             print('Success: connection established')
+        except OSError as error:
+            print("Fail: it didn't connect: ", error)
 
 
     def createDirectory(self, path):
         new_path = self.drivePath + path.removeprefix('/home/machine')
+        self.changeDirectory()
         try:
-            self.changeDirectory()
             os.mkdir(new_path)
+            print('Success: directory created on: ', new_path)
         except:
             print('Fail to create the directory: ', new_path)
-        finally:
-            print('Success: directory created on: ', new_path)
 
 
     def createFile(self, path):
         new_path = self.drivePath + path.removeprefix('/home/machine')
-        try:
-            self.changeDirectory()
-            shutil.copyfile(src=path, dst=new_path)
-        except:
-            print('Fail to copy the file ', path, ' to ', new_path)
-        finally:
-            print('Success: file copied to ', new_path)
-            time.sleep(4)
+        background_thread = threading.Thread(target=self.backgroundCopying, args=(path, new_path))
+        background_thread.start()
 
 
-    def backgroundOperations(self, path, new_path):
+    def backgroundCopying(self, path, new_path):
         self.background_thread_busy = True
+        self.changeDirectory()
         try:
-            self.changeDirectory()
             shutil.copyfile(src=path, dst=new_path)
-        except OSError as error:
-            print(error)
-        finally:
             print('Success: file copied to ', new_path)
-            time.sleep(2)
             self.background_thread_busy = False
+        except:
+            print('Error: The file was not copied')
 
     
     def modifiedFile(self, path):
         new_path = self.drivePath + path.removeprefix('/home/machine')
-        time_modified_file = os.path.getmtime(path)
+        file_exist = os.path.exists(new_path)
         LOCAL_TIME = time.time()
-        difference_time = LOCAL_TIME - time_modified_file
-        if difference_time <= 2:
-            if not self.background_thread_busy:
-                background_thread = threading.Thread(target=self.backgroundOperations, args=(path, new_path))
+        if file_exist:
+            time_modified_file = os.path.getmtime(new_path)
+            difference_time = LOCAL_TIME - time_modified_file # Calculates file modification time
+            if difference_time > 5:
+                background_thread = threading.Thread(target=self.backgroundCopying, args=(path, new_path))
                 background_thread.start()
             else:
-                print('A thread already busy. Please wait for it to finish.')
-        
+                print('The file already was modified a less 5 seconds')
+
 
     def verifyUser(self):
         ls = os.listdir()
