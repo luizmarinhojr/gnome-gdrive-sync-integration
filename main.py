@@ -1,8 +1,7 @@
-import time, threading
+import time
 import commands as comm
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from watchdog.events import FileSystemEvent
 
 
 class MyHandler(FileSystemEventHandler):
