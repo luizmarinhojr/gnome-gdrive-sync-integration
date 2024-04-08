@@ -5,25 +5,35 @@ class Commands:
     def __init__(self):
         self.drivePath = self.verifyUser()
         self.background_thread_busy = False
-        self.mountDriver() # Mounting the Google Drive account on start
+        self.mountDriver() # Mounting the Google Drive account on program boot
 
 
     def mountDriver(self):
         if 'mount-google-drive.sh' in os.listdir(path='./'):
-            try:
-                os.popen('sh ./mount-google-drive.sh')
-            except OSError as error:
-                print(error)
+            UID = os.getuid()
+            URI = f'/run/user/{UID}/gvfs'
+            if not f'google-drive:host=gmail.com,user={self.mail[0]}' in os.listdir(URI):
+                try:
+                    os.popen('sh ./mount-google-drive.sh')
+                except OSError as error:
+                    print(error)
+                finally:
+                    print('Google Drive mounted with sucess in ', self.drivePath)
+            else:
+                print('The driver already is mounted')
         else:
             self.createMountFile()
     
 
     def createMountFile(self):
         try:
-            with open('mount-google-drive.sh', 'w') as mount:
-                mount.write('gio mount --device="google-drive://lc.juninhonota10000@gmail.com/"')
+            with open('mount-google-drive.sh', 'w') as mount_file:
+                command_gio = f'gio mount --device="google-drive://{self.mail[0]}@gmail.com/"'
+                mount_file.write(command_gio)
         except OSError as error:
             print('A error occurred ', error)
+        finally:
+            self.mountDriver()
 
 
     def changeDirectory(self):
@@ -83,7 +93,8 @@ class Commands:
             while True:
                 try:
                     with open('usermail.txt', 'w') as usermail:
-                        usermail.write(str(input('Type your gmail username: ')).removesuffix('@gmail.com'))
+                        mail = str(input('Type your gmail username: ')).removesuffix('@gmail.com')
+                        usermail.write(mail)
                 except:
                     print('Error: File usermail.txt was not created')
                 finally:
@@ -96,9 +107,8 @@ class Commands:
     def fetchUser(self):
         try:
             with open('usermail.txt', 'r') as usermail:
-                mail = usermail.read().splitlines()
-                for line in mail:
-                    drivePath = f'/run/user/1000/gvfs/google-drive:host=gmail.com,user={line}/Meu Drive'
+                self.mail = usermail.read().splitlines()
+                drivePath = f'/run/user/1000/gvfs/google-drive:host=gmail.com,user={self.mail[0]}/Meu Drive'
         except:
             print('Error: file usermail.txt was not available to read')
         finally:
