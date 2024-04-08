@@ -5,6 +5,25 @@ class Commands:
     def __init__(self):
         self.drivePath = self.verifyUser()
         self.background_thread_busy = False
+        self.mountDriver() # Mounting the Google Drive account on start
+
+
+    def mountDriver(self):
+        if 'mount-google-drive.sh' in os.listdir(path='./'):
+            try:
+                os.popen('sh ./mount-google-drive.sh')
+            except OSError as error:
+                print(error)
+        else:
+            self.createMountFile()
+    
+
+    def createMountFile(self):
+        try:
+            with open('mount-google-drive.sh', 'w') as mount:
+                mount.write('gio mount --device="google-drive://lc.juninhonota10000@gmail.com/"')
+        except OSError as error:
+            print('A error occurred ', error)
 
 
     def changeDirectory(self):

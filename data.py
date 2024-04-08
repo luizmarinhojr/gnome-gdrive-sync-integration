@@ -12,7 +12,7 @@ class Data:
         return self.file_data
 
 
-    def createData(self, e=''):
+    def savePaths(self, e=''):
         try:
             with open('datapaths.txt', 'w') as data:
                 [data.write(item + '\n') for item in self.paths]
