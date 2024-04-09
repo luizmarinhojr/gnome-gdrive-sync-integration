@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=gDrive Sync
+Comment=Command Shell to execute automatic sync on Gnome
+Type=Application
+Icon=/home/machine/Documents/python-projects/google-drive-fedora/content/google-drive-logo.png
+Exec=/home/machine/Documents/python-projects/google-drive-fedora/shell/gdrivesync.sh
+Terminal=false
+Categories=Utility;

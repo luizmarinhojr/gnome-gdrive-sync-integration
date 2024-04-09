@@ -1,4 +1,4 @@
-import time
+from time import sleep
 import commands as comm
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -8,7 +8,7 @@ class MyHandler(FileSystemEventHandler):
     running = True
     def __init__(self):
         self.commands = comm.Commands()
-    
+
     def on_any_event(self, event):
         if event.is_directory:
             if event.event_type == 'created':
@@ -33,19 +33,19 @@ class MyHandler(FileSystemEventHandler):
             elif event.event_type == 'deleted':
                 print(f'File deleted: {event.src_path}')
 
-
-# def startProgram():
-#     path = "/home/machine/Documents"  # Directory to monitor
-#     event_handler = MyHandler()
-#     observer = Observer()
-#     observer.schedule(event_handler, path, recursive=True)
-#     observer.start()
-#     try:
-#         while True:
-#             time.sleep(1)
-#             if MyHandler.running == False:
-#                 raise KeyboardInterrupt
-#     except KeyboardInterrupt:
-#         observer.stop()
-#         print('Sync Stopped')
-#     observer.join()
+    def startProgram(self):
+        # path = "/home/machine/Documents"  # Directory to monitor
+        path = comm.Commands.fetchPath()
+        event_handler = MyHandler()
+        observer = Observer()
+        observer.schedule(event_handler, path, recursive=True)
+        observer.start()
+        try:
+            while True:
+                sleep(1)
+                if self.running == False:
+                    raise KeyboardInterrupt
+        except KeyboardInterrupt:
+            observer.stop()
+            print('Sync Stopped')
+        observer.join()

@@ -4,9 +4,10 @@ from random import uniform
 
 class Commands:
     def __init__(self):
-        self.drivePath = self.verifyUser()
+        self.drivePath = self.fetchUser()
         self.background_thread_busy = False
         self.TIME_EVENT = time.time()
+        self.default_path = self.formattingDefaultPath()
         self.mountDriver() # Mounting the Google Drive account on program boot
 
 
@@ -43,8 +44,15 @@ class Commands:
             self.mountDriver()
 
 
+    def formattingDefaultPath(self):
+        bring_path = Commands.fetchPath().split('/')
+        default_path = '/'.join(bring_path[0:-1])
+        return default_path
+
+
     def createDirectory(self, path):
-        new_path = self.drivePath + path.removeprefix('/home/machine')
+        print(self.default_path)
+        new_path = self.drivePath + path.removeprefix(self.default_path)
         self.verifyMount()
         try:
             os.mkdir(new_path)
@@ -56,7 +64,7 @@ class Commands:
 
     def createFile(self, path):
         time.sleep(uniform(0, 2))
-        new_path = self.drivePath + path.removeprefix('/home/machine')
+        new_path = self.drivePath + path.removeprefix(self.default_path)
         background_thread = threading.Thread(target=self.backgroundCopying, args=(path, new_path))
         background_thread.start()
 
@@ -75,7 +83,7 @@ class Commands:
     
     def modifiedFile(self, path):
         time.sleep(uniform(0, 2))
-        new_path = self.drivePath + path.removeprefix('/home/machine')
+        new_path = self.drivePath + path.removeprefix(self.default_path)
         file_exist = os.path.exists(new_path)
         TIME_NOW = time.time()
         if file_exist:
@@ -89,22 +97,6 @@ class Commands:
                 print('The file already was modified a less 5 seconds')
 
 
-    def verifyUser(self):
-        ls = os.listdir('./data')
-        if 'usermail.txt' not in ls:
-            while True:
-                try:
-                    with open('./data/usermail.txt', 'w') as usermail:
-                        mail = str(input('Type your mail: ')).split('@')
-                        usermail.write(mail[0])
-                    print('Success: usermail.txt was created!')
-                    return self.fetchUser()
-                except OSError as error:
-                    print('Error: File usermail.txt was not created - ', error)
-        else:
-            return self.fetchUser()
-
-
     def fetchUser(self):
         try:
             with open('./data/usermail.txt', 'r') as usermail:
@@ -114,3 +106,15 @@ class Commands:
             return drivePath
         except OSError as error:
             print('Error: file usermail.txt was not available to read - ', error)
+
+
+    @staticmethod
+    def fetchPath():
+        if os.path.exists('./data/datapaths.txt'):
+            try:
+                with open('./data/datapaths.txt', 'r') as data:
+                    file_data = data.read().splitlines()
+                print('Data Found: ', file_data)
+                return file_data[0]
+            except OSError:
+                print('Failed to create the file')

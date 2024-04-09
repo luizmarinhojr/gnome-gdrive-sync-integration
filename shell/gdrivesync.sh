@@ -1,1 +1,1 @@
-python /home/machine/Documents/python-projects/google-drive-fedora/main.py
+python /home/machine/Documents/python-projects/google-drive-fedora/app.py
