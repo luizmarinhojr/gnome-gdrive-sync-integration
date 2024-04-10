@@ -14,11 +14,11 @@ class Commands:
     def mountDriver(self):
         if os.path.exists('./shell/mount-google-drive.sh'):
             UID = os.getuid()
-            URI = f'/run/user/{UID}/gvfs/google-drive:host=gmail.com,user={self.mail[0]}'
+            URI = f'/run/user/{UID}/gvfs/google-drive:host=gmail.com,user={self.data['usermail']}'
             if not os.path.exists(URI):
                 try:
                     os.popen('sh ./shell/mount-google-drive.sh')
-                    print('Google Drive mounted with sucess in ', self.drivePath)
+                    print('Google Drive mounted with sucess in ', URI)
                     self.TIME_EVENT = time.time()
                 except OSError as error:
                     print(error)
@@ -31,7 +31,7 @@ class Commands:
     def createMountFile(self):
         try:
             with open('./shell/mount-google-drive.sh', 'w') as mount_file:
-                command_gio = f'gio mount --device="google-drive://{self.mail[0]}@gmail.com/"'
+                command_gio = f'gio mount --device="google-drive://{self.data['usermail']}@gmail.com/"'
                 mount_file.write(command_gio)
             self.mountDriver()
         except OSError as error:
@@ -51,7 +51,6 @@ class Commands:
 
 
     def createDirectory(self, path):
-        print(self.default_path)
         new_path = self.drivePath + path.removeprefix(self.default_path)
         self.verifyMount()
         try:
@@ -84,9 +83,8 @@ class Commands:
     def modifiedFile(self, path):
         time.sleep(uniform(0, 2))
         new_path = self.drivePath + path.removeprefix(self.default_path)
-        file_exist = os.path.exists(new_path)
         TIME_NOW = time.time()
-        if file_exist:
+        if os.path.exists(new_path):
             time_modified_file = os.path.getmtime(new_path)
             difference_time = TIME_NOW - time_modified_file # Calculates file modification time
             if difference_time > 5:
@@ -98,10 +96,12 @@ class Commands:
 
 
     def fetchUser(self):
+        self.data = {'path': '', 'usermail': '', 'folder': ''}
         try:
-            with open('./data/usermail.txt', 'r') as usermail:
-                self.mail = usermail.read().splitlines()
-                drivePath = f'/run/user/1000/gvfs/google-drive:host=gmail.com,user={self.mail[0]}/Meu Drive'
+            with open('./data/config.txt', 'r') as file:
+                for item in self.data:
+                    self.data[item] = file.readline().strip()
+                drivePath = f'/run/user/1000/gvfs/google-drive:host=gmail.com,user={self.data['usermail']}/{self.data['folder']}'
             print('Success: usermail.txt read!')
             return drivePath
         except OSError as error:
@@ -110,11 +110,12 @@ class Commands:
 
     @staticmethod
     def fetchPath():
-        if os.path.exists('./data/datapaths.txt'):
+        data = {'path': '', 'usermail': '', 'folder': ''}
+        if os.path.exists('./data/config.txt'):
             try:
-                with open('./data/datapaths.txt', 'r') as data:
-                    file_data = data.read().splitlines()
-                print('Data Found: ', file_data)
-                return file_data[0]
-            except OSError:
-                print('Failed to create the file')
+                with open('./data/config.txt', 'r') as file:
+                    for item in data:
+                        data[item] = file.readline().strip()
+                return data['path']
+            except:
+                print('error')
