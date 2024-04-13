@@ -1,69 +1,46 @@
-import os, threading, main
-from watchdog.observers import Observer
+import os, threading, events
 
 
 class Data:
     def __init__(self):
-        self.dicionario = {'path': '', 'usermail': '', 'folder': ''}
-    
+        self.default_path_home = os.path.join(os.path.expanduser('~'), '.local', 'share', 'GDriveSync')
 
-    @staticmethod
-    def fetchData():
-        data = {'path': '', 'usermail': '', 'folder': ''}
-        if os.path.exists('./data/config.txt'):
+
+    def fetchData(self):
+        self.data = {'path': '', 'usermail': '', 'folder': ''}
+        if os.path.exists(os.path.join(self.default_path_home, 'data', 'config.txt')):
             try:
-                with open('./data/config.txt', 'r') as file:
-                    for item in data:
-                        data[item] = file.readline().strip()
+                with open(os.path.join(self.default_path_home, 'data', 'config.txt'), 'r') as file:
+                    for item in self.data:
+                        self.data[item] = file.readline().strip()
             except:
-                print('error')
+                print('Error to read the data')
         
-        return data
+        return self.data
 
 
     def saveAll(self, data, e=''):
+        self.createDirectory()
+        os.system(f'chmod +w {os.path.join(self.default_path_home, "data")}')
         try:
-            with open('./data/config.txt', 'w') as file:
+            with open(os.path.join(self.default_path_home, 'data', 'config.txt'), 'w') as file:
                 [file.write(data[item]+'\n') for item in data]
-            self.createFileExecute()
-        except:
-            print('Error')
-
-
-    def createFileExecute(self, e = ''):
-        self.current_path = os.getcwd()
-        if not os.path.exists(self.current_path+'/shell/gdrivesync.sh'):
-            try:
-                with open('./shell/gdrivesync.sh', 'w') as gdrive_file:
-                    command_sh = f'python {self.current_path}/app.py'
-                    gdrive_file.write(command_sh)
-                print('File gdrivesync.sh create succesfully')
-                self.createFileDesktop()
-            except OSError as error:
-                print('A error occurred ', error)
-
+        except OSError as error:
+            print('Error', error)
     
-    def createFileDesktop(self):
-        icon = self.current_path+'/content/google-drive-logo.png'
-        exec = 'sh '+self.current_path+'/shell/gdrivesync.sh'
-        user = os.getlogin()
-        path = f'/home/{user}/.local/share/applications/gdrive-sync.desktop'
-        if not os.path.exists(path):
-            with open(path, 'w') as gdrive:
-                gdrive.write(f'''[Desktop Entry]
-Version=1.0
-Name=gDrive Sync
-Comment=Command Shell to execute automatic sync on Gnome
-Type=Application
-Icon={icon}
-Exec={exec}
-Terminal=false
-Categories=Utility;''')
+
+    def createDirectory(self):
+        try:
+            if not os.path.exists(self.default_path_home):
+                os.mkdir(self.default_path_home)
+            if not os.path.exists(os.path.join(self.default_path_home, 'data')):
+                os.mkdir(os.path.join(self.default_path_home, 'data'))
+        except OSError as error:
+            print('A error to create directory: ', error)
 
 
     def executeProgram(self, e = ''):
-        # os.popen('sh ./shell/gdrivesync.sh')
-        self.event_handler = main.MyHandler()
+        self.event_handler = events.MyHandler()
         self.background_running = threading.Thread(target = self.event_handler.startProgram, args = ())
         self.background_running.start()
         print('Program running succesfully')

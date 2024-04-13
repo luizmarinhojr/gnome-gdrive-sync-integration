@@ -1,9 +1,11 @@
-import os, shutil, time, threading
+import os, time, threading
+import shutil
 from random import uniform
 
 
 class Commands:
     def __init__(self):
+        self.default_path_home = os.path.join(os.path.expanduser('~'), '.local', 'share', 'GDriveSync')
         self.drivePath = self.fetchUser()
         self.background_thread_busy = False
         self.TIME_EVENT = time.time()
@@ -12,30 +14,17 @@ class Commands:
 
 
     def mountDriver(self):
-        if os.path.exists('./shell/mount-google-drive.sh'):
-            UID = os.getuid()
-            URI = f'/run/user/{UID}/gvfs/google-drive:host=gmail.com,user={self.data['usermail']}'
-            if not os.path.exists(URI):
-                try:
-                    os.popen('sh ./shell/mount-google-drive.sh')
-                    print('Google Drive mounted with sucess in ', URI)
-                    self.TIME_EVENT = time.time()
-                except OSError as error:
-                    print(error)
-            else:
-                print('The driver is ready')
+        UID = os.getuid()
+        URI = os.path.join(os.path.expanduser('/'), 'run', 'user', f'{UID}', 'gvfs', f'google-drive:host=gmail.com,user={self.data["usermail"]}')
+        if not os.path.exists(URI):
+            try:
+                os.system(f'gio mount --device="google-drive://{self.data["usermail"]}@gmail.com/"')
+                print('Google Drive mounted with sucess in ', URI)
+                self.TIME_EVENT = time.time()
+            except OSError as error:
+                print('Mount Driver error: ', error)
         else:
-            self.createMountFile()
-    
-
-    def createMountFile(self):
-        try:
-            with open('./shell/mount-google-drive.sh', 'w') as mount_file:
-                command_gio = f'gio mount --device="google-drive://{self.data['usermail']}@gmail.com/"'
-                mount_file.write(command_gio)
-            self.mountDriver()
-        except OSError as error:
-            print('A error occurred ', error)
+            print('The driver is ready')
     
 
     def verifyMount(self):
@@ -45,7 +34,7 @@ class Commands:
 
 
     def formattingDefaultPath(self):
-        bring_path = Commands.fetchPath().split('/')
+        bring_path = self.data['path'].split('/')
         default_path = '/'.join(bring_path[0:-1])
         return default_path
 
@@ -54,8 +43,9 @@ class Commands:
         new_path = self.drivePath + path.removeprefix(self.default_path)
         self.verifyMount()
         try:
-            os.mkdir(new_path)
-            self.TIME_EVENT = time.time()
+            if not os.path.exists(new_path):
+                os.mkdir(new_path)
+                self.TIME_EVENT = time.time()
             print('Success: directory created on: ', new_path)
         except:
             print('Fail to create the directory: ', new_path)
@@ -91,17 +81,20 @@ class Commands:
                 if not self.background_thread_busy:
                     background_thread = threading.Thread(target=self.backgroundCopying, args=(path, new_path))
                     background_thread.start()
+                else:
+                    print('self.background_thread_busy está ocupado')
             else:
                 print('The file already was modified a less 5 seconds')
 
 
     def fetchUser(self):
         self.data = {'path': '', 'usermail': '', 'folder': ''}
+        UID = os.getuid()
         try:
-            with open('./data/config.txt', 'r') as file:
+            with open(os.path.join(self.default_path_home, 'data', 'config.txt'), 'r') as file:
                 for item in self.data:
                     self.data[item] = file.readline().strip()
-                drivePath = f'/run/user/1000/gvfs/google-drive:host=gmail.com,user={self.data['usermail']}/{self.data['folder']}'
+                drivePath = os.path.join(os.path.expanduser('/'), 'run', 'user', f'{UID}', 'gvfs', f'google-drive:host=gmail.com,user={self.data["usermail"]}', self.data['folder'])
             print('Success: usermail.txt read!')
             return drivePath
         except OSError as error:
@@ -111,11 +104,11 @@ class Commands:
     @staticmethod
     def fetchPath():
         data = {'path': '', 'usermail': '', 'folder': ''}
-        if os.path.exists('./data/config.txt'):
-            try:
-                with open('./data/config.txt', 'r') as file:
-                    for item in data:
-                        data[item] = file.readline().strip()
-                return data['path']
-            except:
-                print('error')
+        default_path_home = os.path.join(os.path.expanduser('~'), '.local', 'share', 'GDriveSync')
+        try:
+            with open(os.path.join(default_path_home, 'data', 'config.txt'), 'r') as file:
+                for item in data:
+                    data[item] = file.readline().strip()
+            return data['path']
+        except:
+            print('error')
