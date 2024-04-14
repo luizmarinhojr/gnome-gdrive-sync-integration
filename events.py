@@ -9,6 +9,7 @@ class MyHandler(FileSystemEventHandler):
     def __init__(self):
         self.commands = comm.Commands()
 
+
     def on_any_event(self, event):
         if event.is_directory:
             if event.event_type == 'created':
@@ -33,7 +34,9 @@ class MyHandler(FileSystemEventHandler):
             elif event.event_type == 'deleted':
                 print(f'File deleted: {event.src_path}')
 
-    def startProgram(self):
+
+    @staticmethod
+    def startProgram():
         # path = "/home/machine/Documents"  # Directory to monitor
         path = comm.Commands.fetchPath()
         event_handler = MyHandler()
@@ -43,7 +46,7 @@ class MyHandler(FileSystemEventHandler):
         try:
             while True:
                 sleep(1)
-                if self.running == False:
+                if event_handler.running == False:
                     raise KeyboardInterrupt
         except KeyboardInterrupt:
             observer.stop()

@@ -5,9 +5,9 @@ from data import Data
 class App():
     def __init__(self, page: ft.Page):
         self.page = page
-        self.page.title = 'Gdrive Sync'
         self.page.window_width = 450
         self.page.window_height = 550
+        self.page.title = 'Gdrive Sync'
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.Data = Data()
         self.data = self.Data.fetchData()

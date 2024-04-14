@@ -40,8 +40,8 @@ class Data:
 
 
     def executeProgram(self, e = ''):
-        self.event_handler = events.MyHandler()
-        self.background_running = threading.Thread(target = self.event_handler.startProgram, args = ())
+        self.event_handler = events.MyHandler
+        self.background_running = threading.Thread(target = self.event_handler.startProgram)
         self.background_running.start()
         print('Program running succesfully')
         return True
