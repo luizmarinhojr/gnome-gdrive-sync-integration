@@ -1,12 +1,14 @@
 import flet as ft
 from data import Data
+from background import BackgroundIcon as bi
 
 
 class App():
     def __init__(self, page: ft.Page):
         self.page = page
-        self.page.window_width = 450
-        self.page.window_height = 550
+        self.page.adaptive = True
+        self.page.window_width = 500
+        self.page.window_height = 600
         self.page.title = 'Gdrive Sync'
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.Data = Data()
@@ -33,6 +35,12 @@ class App():
         # JUST ELEMENTS
         self.pick_files_dialog = ft.FilePicker(
             on_result=self.pick_files_result
+        )
+
+        self.button_folder_path = ft.FloatingActionButton(
+            icon = ft.icons.DRIVE_FOLDER_UPLOAD,
+            bgcolor = ft.colors.BLUE,
+            on_click = lambda _: self.pick_files_dialog.get_directory_path()
         )
 
         self.field_path = ft.TextField(
@@ -62,7 +70,7 @@ class App():
         self.button_save_all = ft.ElevatedButton(
             text = 'Save all',
             expand = True,
-            height = 45,
+            height = 50,
             color = ft.colors.WHITE,
             icon = ft.icons.SAVE,
             bgcolor = ft.colors.BLUE,
@@ -73,7 +81,7 @@ class App():
         self.button_active_sync = ft.ElevatedButton(
             text = 'Active Sync',
             expand = True,
-            height = 45,
+            height = 50,
             color = ft.colors.WHITE,
             icon = ft.icons.SYNC,
             bgcolor = ft.colors.BLUE,
@@ -85,7 +93,7 @@ class App():
         self.button_stop_sync = ft.ElevatedButton(
             text = 'Stop Sync',
             expand = True,
-            height = 45,
+            height = 50,
             color = ft.colors.WHITE,
             icon = ft.icons.CLOSE,
             bgcolor = ft.colors.RED,
@@ -94,8 +102,13 @@ class App():
             on_click = self.stopProgram
         )
 
+        self.check_active_background = ft.Checkbox(
+            label = "Check to run in background",
+            value = False
+        )
+
         #JUST CONTAINERS
-        container_field = ft.Column([
+        self.container_field = ft.Column([
             ft.Column([
                 ft.Row([
                     ft.Text(
@@ -106,11 +119,7 @@ class App():
             ),
                 ft.Row([
                     self.field_path,
-                    ft.FloatingActionButton(
-                        icon = ft.icons.DRIVE_FOLDER_UPLOAD,
-                        bgcolor = ft.colors.BLUE,
-                        on_click = lambda _: self.pick_files_dialog.get_directory_path()
-                    )
+                    self.button_folder_path
                 ])
             ]),
             ft.Column([
@@ -141,22 +150,25 @@ class App():
 
         self.container_monitoring = ft.Column([
             ft.Row(
-                [ft.Icon(ft.icons.INFO, size = 17), ft.Text(value = 'Save all and later Active the Sync')]
+                [ft.Icon(ft.icons.INFO, size = 17), ft.Text(value = 'Save all and Active the Sync')]
             )
         ])
+
+        self.container_checkbox = ft.Row(
+                [self.check_active_background]
+            )
 
         self.container_confirm = ft.Container(
             ft.Column([
                 ft.Row([self.button_save_all]),
                 ft.Row([self.button_active_sync]),
                 ft.Row([self.button_stop_sync])
-            ]),
+            ], spacing = 10),
             padding = ft.padding.symmetric(vertical=20)
         )
 
         self.page.overlay.append(self.pick_files_dialog)
-
-        self.page.add(container_field, self.container_monitoring, self.container_confirm)
+        self.page.add(self.container_field, self.container_monitoring, self.container_checkbox, self.container_confirm)
 
 
     def pick_files_result(self, e):
@@ -203,19 +215,47 @@ class App():
         self.container_monitoring.controls.append(ft.Row([ft.Icon(ft.icons.CHECK, size = 17), ft.Text(value = f'Monitoring now {self.data["path"]}')]))
         self.button_active_sync.visible = False
         self.button_stop_sync.visible = True
+        self.field_mail.disabled = True
+        self.field_first_folder.disabled = True
+        self.check_active_background.disabled = True
+        self.button_folder_path.disabled = True
+        self.button_folder_path.bgcolor = ft.colors.GREY
+        self.container_checkbox.update()
+        self.container_field.update()
         self.container_confirm.update()
         self.container_monitoring.update()
+        if self.check_active_background.value:
+            self.sendToBackground()
 
     
-    def stopProgram(self, e):
+    def stopProgram(self, e = ''):
         self.running_program = self.Data.killProgram()
         self.container_monitoring.controls.pop()
         self.container_monitoring.controls.append(ft.Row([ft.Icon(ft.icons.INFO, size = 17), ft.Text(value = 'Save all and later Active the Sync')]))
         self.button_active_sync.visible = True
         self.button_stop_sync.visible = False
+        self.field_mail.disabled = False
+        self.field_first_folder.disabled = False
+        self.check_active_background.disabled = False
+        self.button_folder_path.disabled = False
+        self.button_folder_path.bgcolor = ft.colors.BLUE
+        self.container_checkbox.update()
+        self.container_field.update()
         self.container_monitoring.update()
         self.container_confirm.update()
+        if self.check_active_background.value:
+            self.daemon.stopIcon()
+    
 
+    def sendToBackground(self):
+        self.page.window_visible = False
+        self.page.window
+        self.daemon = bi()
+        self.page.update()
+
+
+def startApp():
+    ft.app(target=App)
 
 if __name__ == '__main__':
-    ft.app(target=App)
+    startApp()

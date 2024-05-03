@@ -43,7 +43,8 @@ class Data:
         self.event_handler = events.MyHandler
         self.background_running = threading.Thread(target = self.event_handler.startProgram)
         self.background_running.start()
-        print('Program running succesfully')
+        self.event_handler.running = True
+        print('Monitoring succesfully')
         return True
     
 
