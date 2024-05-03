@@ -4,7 +4,7 @@
     <img src="https://raw.githubusercontent.com/pedromxavier/flag-badges/main/badges/BR.svg" alt="made in <country code>">
 </a>
 
-# Synchronization to Google Drive and Fedora Gnome.
+# Synchronization to Google Drive and Gnome.
 
 ### This application uses Gnome's own Online Accounts interface, there is no need for any external connection to Google or the need to enter a password.
 
