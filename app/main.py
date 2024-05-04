@@ -249,7 +249,6 @@ class App():
 
     def sendToBackground(self):
         self.page.window_visible = False
-        self.page.window
         self.daemon = bi()
         self.page.update()
 
