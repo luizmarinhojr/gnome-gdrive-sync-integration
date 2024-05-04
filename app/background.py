@@ -1,4 +1,4 @@
-from pystray import Icon, Menu, MenuItem
+from pystray import Icon
 from PIL import Image
 from threading import Thread
 
@@ -9,16 +9,8 @@ class BackgroundIcon:
     
 
     def stopIcon(self):
-        print('Stop')
+        print('Stop Icon')
         self.icon.stop()
-        
-    # Função a ser executada quando o ícone do System Tray for clicado
-    def showApp(self, icon, item):
-        print(f'Clicked {item}')
-
-
-    def stopSync(Self, icon, item):
-        print(f'Clicked ')
 
 
     def main(self):
